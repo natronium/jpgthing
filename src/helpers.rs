@@ -31,9 +31,19 @@ where
     Ret: FromIterator<T>,
 {
     move |reader, endian, args| {
-        from_fn(|| match read(reader, endian, args.clone()) {
-            ok @ Ok(_) => Some(ok),
-            Err(_) => None,
+        from_fn(|| {
+            let initial_pos = reader
+                .stream_position()
+                .expect("reader should have a stream position");
+            match read(reader, endian, args.clone()) {
+                ok @ Ok(_) => Some(ok),
+                Err(_) => {
+                    reader
+                        .seek(SeekFrom::Start(initial_pos))
+                        .expect("reader should be able to seek back to old position");
+                    None
+                }
+            }
         })
         .fuse()
         .collect()

@@ -30,8 +30,6 @@ markers:
 
 */
 
-
-
 #[binread]
 #[derive(Debug)]
 #[br(magic = 0xFFD8u16)]
@@ -77,9 +75,8 @@ pub enum MiscSegment {
     },
     #[br(magic = 0xFFDDu16)]
     RestartIntervalDefinition {
-        len: u16,
-        #[br(count = len - 2)]
-        body: Vec<u8>,
+        _len: u16,
+        n: u16
     },
     #[br(magic = 0xFFFEu16)]
     Comment {
@@ -143,23 +140,35 @@ pub struct FrameComponentParameterSet {
 
 #[binread]
 #[derive(Debug)]
-#[br(assert(_raw_n >= 0xD0 && _raw_n <= 0xD7))]
-#[br(assert(_marker == 0xFF))]
-pub struct RSTMarker {
-    pub _marker: u8,
-    pub _raw_n: u8,
-    #[br(calc = _raw_n & 0b0000_1111)]
-    pub n: u8,
+pub struct Scan {
+    #[br(parse_with = until_invalid)]
+    pub misc_tables: Vec<MiscSegment>,
+    #[br(dbg)]
+    pub header: ScanHeader,
+    #[br(parse_with = until_invalid)]
+    #[br(dbg)]
+    pub ecs_segments: Vec<(ECSSegment, RSTSegment)>,
+    #[br(dbg)]
+    pub ecs_last: ECSSegment,
 }
 
 #[binread]
 #[derive(Debug)]
-pub struct Scan {
-    #[br(parse_with = until_invalid)]
-    pub misc_tables: Vec<MiscSegment>,
-    pub header: ScanHeader,
+pub struct ECSSegment {
     #[br(parse_with = parse_ecs)]
-    pub raw_ecs_data: Vec<u8>,
+    pub body: Vec<u8>,
+}
+
+#[binread]
+#[derive(Debug)]
+#[br(assert(_raw_n >= 0xD0 && _raw_n <= 0xD7))]
+#[br(assert(_marker == 0xFF))]
+pub struct RSTSegment {
+    #[br(dbg)]
+    pub _marker: u8,
+    pub _raw_n: u8,
+    #[br(calc = _raw_n & 0b0000_1111)]
+    pub n: u8,
 }
 
 #[binread]

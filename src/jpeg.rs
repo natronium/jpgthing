@@ -32,6 +32,8 @@ markers:
 
 */
 
+//TODO: 4bit hi and lo types we use them in 5 places already
+
 #[binread]
 #[derive(Debug)]
 #[br(magic = 0xFFD8u16)]
@@ -68,10 +70,13 @@ pub enum MiscSegment {
         tables: Vec<QuantizationTable>,
     },
     #[br(magic = 0xFFC4u16)]
-    HuffmanTable {
+    DefineHuffmanTable {
         len: u16,
-        #[br(count = len - 2)]
-        body: Vec<u8>,
+        #[br(try_map = |raw_bytes: Vec<u8>| {
+            let mut limited_cursor = Cursor::new(raw_bytes);
+            until_invalid(&mut limited_cursor, Endian::Big, ())
+        }, count = len - 2)]
+        tables: Vec<HuffmanTable>,
     },
     #[br(magic = 0xFFCCu16)]
     ArithmeticConditioningTable {
@@ -112,6 +117,23 @@ pub struct QuantizationTable {
     pub tq: u8,
     #[br(args{count: 64, inner: (pq == 1,)})]
     pub qs: Vec<QuantizationEntry>,
+}
+
+#[binread]
+#[derive(Debug)]
+pub struct HuffmanTable {
+    #[br(temp)]
+    _raw_tc_th: u8,
+    #[br(calc = (_raw_tc_th &0b1111_0000) >> 4)]
+    pub tc: u8,
+    #[br(calc = (_raw_tc_th &0b0000_1111) >> 0)]
+    pub th: u8,
+    #[br(count = 16)]
+    pub ls: Vec<u8>,
+    #[br(parse_with = args_iter(ls.iter().map(|&size| -> <Vec<u8> as BinRead>::Args<'_>  {
+        args! {count: size.into()}
+    })))]
+    pub symbol_length_assignment: Vec<Vec<u8>>,
 }
 
 #[binread]

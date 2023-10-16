@@ -1,5 +1,7 @@
+use std::io::Cursor;
+
 use crate::helpers::{parse_ecs, until_invalid};
-use binrw::binread;
+use binrw::{args, binread, helpers::args_iter, BinRead, Endian};
 
 /*
 A (JIF) Jpeg File is:
@@ -56,10 +58,14 @@ pub struct Frame {
 #[derive(Debug)]
 pub enum MiscSegment {
     #[br(magic = 0xFFDBu16)]
-    QuantizationTable {
+    DefineQuantizationTable {
         len: u16,
-        #[br(count = len - 2)]
-        body: Vec<u8>,
+        //TODO: is there a nice way to do this with parse_with? some reasonable way to factor this out into a helper?
+        #[br(try_map = |raw_bytes: Vec<u8>| {
+            let mut limited_cursor = Cursor::new(raw_bytes);
+            until_invalid(&mut limited_cursor, Endian::Big, ())
+        }, count = len-2)]
+        tables: Vec<QuantizationTable>,
     },
     #[br(magic = 0xFFC4u16)]
     HuffmanTable {
@@ -93,6 +99,29 @@ pub enum MiscSegment {
         #[br(count = len - 2)]
         body: Vec<u8>,
     },
+}
+
+#[binread]
+#[derive(Debug)]
+pub struct QuantizationTable {
+    #[br(temp)]
+    _raw_pq_tq: u8,
+    #[br(calc = (_raw_pq_tq &0b1111_0000) >> 4)]
+    pub pq: u8,
+    #[br(calc = (_raw_pq_tq &0b0000_1111) >> 0)]
+    pub tq: u8,
+    #[br(args{count: 64, inner: (pq == 1,)})]
+    pub qs: Vec<QuantizationEntry>,
+}
+
+#[binread]
+#[derive(Debug)]
+#[br(import(hi_precision: bool))]
+pub enum QuantizationEntry {
+    #[br(assert(hi_precision == false))]
+    Low(u8),
+    #[br(assert(hi_precision == true))]
+    Hi(u16),
 }
 
 #[binread]

@@ -35,7 +35,7 @@ markers:
 #[br(magic = 0xFFD8u16)]
 pub struct JIF {
     pub jpeg_frame: Frame,
-    #[br(magic = 0xFFD9u16, dbg, temp)]
+    #[br(magic = 0xFFD9u16, temp)]
     pub _eoi: (),
 }
 
@@ -143,12 +143,9 @@ pub struct FrameComponentParameterSet {
 pub struct Scan {
     #[br(parse_with = until_invalid)]
     pub misc_tables: Vec<MiscSegment>,
-    #[br(dbg)]
     pub header: ScanHeader,
     #[br(parse_with = until_invalid)]
-    #[br(dbg)]
     pub ecs_segments: Vec<(ECSSegment, RSTSegment)>,
-    #[br(dbg)]
     pub ecs_last: ECSSegment,
 }
 
@@ -164,7 +161,6 @@ pub struct ECSSegment {
 #[br(assert(_raw_n >= 0xD0 && _raw_n <= 0xD7))]
 #[br(assert(_marker == 0xFF))]
 pub struct RSTSegment {
-    #[br(dbg)]
     pub _marker: u8,
     pub _raw_n: u8,
     #[br(calc = _raw_n & 0b0000_1111)]

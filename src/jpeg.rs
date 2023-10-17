@@ -181,7 +181,7 @@ pub struct FrameHeader {
 pub struct FrameComponentParameterSet {
     pub c: u8,
     #[br(temp)]
-    pub _raw_h_v: u8,
+    _raw_h_v: u8,
     #[br(calc = (_raw_h_v & 0b1111_0000) >> 4)]
     pub h: u8, //u4
     #[br(calc = _raw_h_v & 0b0000_1111)]
@@ -212,8 +212,10 @@ pub struct ECSSegment {
 #[br(assert(_raw_n >= 0xD0 && _raw_n <= 0xD7))]
 #[br(assert(_marker == 0xFF))]
 pub struct RSTSegment {
+    #[br(temp)]
     pub _marker: u8,
-    pub _raw_n: u8,
+    #[br(temp)]
+    _raw_n: u8,
     #[br(calc = _raw_n & 0b0000_1111)]
     pub n: u8,
 }
@@ -228,7 +230,7 @@ pub struct ScanHeader {
     pub component_parameters: Vec<ScanComponentParameterSet>,
     pub ss: u8,
     pub se: u8,
-    pub _raw_ah_al: u8,
+    _raw_ah_al: u8,
     #[br(calc = (_raw_ah_al &0b1111_0000) >> 4)]
     pub ah: u8, //u4
     #[br(calc = (_raw_ah_al &0b0000_1111) >> 0)]
@@ -240,7 +242,7 @@ pub struct ScanHeader {
 pub struct ScanComponentParameterSet {
     pub cs: u8,
     #[br(temp)]
-    pub _raw_td_ta: u8,
+    _raw_td_ta: u8,
     #[br(calc = (_raw_td_ta &0b1111_0000) >> 4)]
     pub td: u8, //u4
     #[br(calc = (_raw_td_ta &0b0000_1111) >> 0)]

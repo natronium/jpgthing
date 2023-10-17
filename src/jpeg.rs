@@ -79,10 +79,13 @@ pub enum MiscSegment {
         tables: Vec<HuffmanTable>,
     },
     #[br(magic = 0xFFCCu16)]
-    ArithmeticConditioningTable {
+    DefineArithmeticConditioningTable {
         len: u16,
-        #[br(count = len - 2)]
-        body: Vec<u8>,
+        #[br(try_map = |raw_bytes: Vec<u8>| {
+            let mut limited_cursor = Cursor::new(raw_bytes);
+            until_invalid(&mut limited_cursor, Endian::Big, ())
+        }, count = len - 2)]
+        tables: Vec<ArithmeticConditioningTable>,
     },
     #[br(magic = 0xFFDDu16)]
     RestartIntervalDefinition {
@@ -104,6 +107,18 @@ pub enum MiscSegment {
         #[br(count = len - 2)]
         body: Vec<u8>,
     },
+}
+
+#[binread]
+#[derive(Debug)]
+pub struct ArithmeticConditioningTable {
+    #[br(temp)]
+    _raw_tc_tb: u8,
+    #[br(calc = (_raw_tc_tb &0b1111_0000) >> 4)]
+    pub tc: u8,
+    #[br(calc = (_raw_tc_tb &0b0000_1111) >> 0)]
+    pub tb: u8,
+    pub cs: u8,
 }
 
 #[binread]

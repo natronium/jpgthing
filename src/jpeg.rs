@@ -130,8 +130,8 @@ pub struct QuantizationTable {
     pub pq: u8,
     #[br(calc = (_raw_pq_tq &0b0000_1111) >> 0)]
     pub tq: u8,
-    #[br(args{count: 64, inner: (pq == 1,)})]
-    pub qs: Vec<QuantizationEntry>,
+    #[br(args(pq == 1,))]
+    pub qs: QuantizationEntries,
 }
 
 #[binread]
@@ -154,11 +154,11 @@ pub struct HuffmanTable {
 #[binread]
 #[derive(Debug)]
 #[br(import(hi_precision: bool))]
-pub enum QuantizationEntry {
+pub enum QuantizationEntries {
     #[br(assert(hi_precision == false))]
-    Low(u8),
+    Low(#[br(count = 64)] Vec<u8>),
     #[br(assert(hi_precision == true))]
-    Hi(u16),
+    Hi(#[br(count = 64)] Vec<u16>),
 }
 
 #[binread]

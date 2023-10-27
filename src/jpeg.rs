@@ -33,7 +33,7 @@ markers:
 */
 
 //TODO: 4bit hi and lo types we use them in 5 places already
-
+//TODO: optional 0xff fill bytes which may preceede a marker and shall be discarded
 #[binread]
 #[derive(Debug)]
 #[br(magic = 0xFFD8u16)]

@@ -36,7 +36,7 @@ fn main() {
                     .clone()
                     .into_iter()
                     .flatten()
-                    .collect();
+                    .collect::<Vec<u8>>();
                 let gen = order_codes(&huffsize, &huffcode, &huffval);
                 //let also_gen = also_generate_code_table(&huffsize.0);
                 println!("gen:      {:?}", gen);
@@ -65,10 +65,10 @@ fn generate_size_table(huff_data: &HuffmanTable) -> (Vec<u8>, usize) {
             //huffsize[k] = i;
             //since k is strictly monotonically increasing, this is equivalent, and also not an error
             huffsize.push(i as u8);
-            k = k + 1;
-            j = j + 1
+            k += 1;
+            j += 1
         }
-        i = i + 1;
+        i += 1;
         j = 1;
     }
     //huffsize[k] = 0;
@@ -92,7 +92,7 @@ fn also_generate_size_table(huff_data: &HuffmanTable) -> (Vec<u8>, usize) {
 
 //figure C.2
 //TODO: make this less imperative? more idiomatic? surely there's a mathier way to represent this
-fn generate_code_table(huffsize: &Vec<u8>) -> Vec<u8> {
+fn generate_code_table(huffsize: &[u8]) -> Vec<u8> {
     let mut k = 0;
     let mut code = 0;
     let mut si = huffsize[0];
@@ -102,8 +102,8 @@ fn generate_code_table(huffsize: &Vec<u8>) -> Vec<u8> {
         loop {
             //huffcode[k] = code;
             huffcode.push(code);
-            code = code + 1;
-            k = k + 1;
+            code += 1;
+            k += 1;
 
             if huffsize[k] != si {
                 break;
@@ -115,8 +115,8 @@ fn generate_code_table(huffsize: &Vec<u8>) -> Vec<u8> {
         }
 
         while huffsize[k] != si {
-            code = code << 1;
-            si = si + 1;
+            code <<= 1;
+            si += 1;
         }
     }
 }
@@ -124,9 +124,9 @@ fn generate_code_table(huffsize: &Vec<u8>) -> Vec<u8> {
 //figure C.3
 // huffval = symbol_length_assignment, but flat (e.g. sla.into_iter().flatten().collect)
 fn order_codes(
-    huffsize: &Vec<u8>,
-    huffcode: &Vec<u8>,
-    huffval: &Vec<u8>,
+    huffsize: &[u8],
+    huffcode: &[u8],
+    huffval: &[u8],
 ) -> (HashMap<u8, u8>, HashMap<u8, u8>) {
     let mut ehufsi = HashMap::new();
     let mut ehufco = HashMap::new();
@@ -135,7 +135,7 @@ fn order_codes(
         ehufco.insert(*value, huffcode[idx]);
         ehufsi.insert(*value, huffsize[idx]);
     }
-    return (ehufsi, ehufco);
+    (ehufsi, ehufco)
 }
 
 //fdct and idct (hopefully) implemented ~verbatim from A.3.3

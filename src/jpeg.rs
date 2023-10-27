@@ -97,7 +97,7 @@ pub enum MiscSegment {
     },
     //FFE0-FFEF
     #[br(magic = 0xFFu8)]
-    #[br(assert( n >= 0xE0 && n <= 0xEF))]
+    #[br(assert( (0xE0..=0xEF).contains(&n)))]
     AppData {
         n: u8,
         len: u16,
@@ -113,7 +113,7 @@ pub struct ArithmeticConditioningTable {
     _raw_tc_tb: u8,
     #[br(calc = (_raw_tc_tb &0b1111_0000) >> 4)]
     pub tc: u8,
-    #[br(calc = (_raw_tc_tb &0b0000_1111) >> 0)]
+    #[br(calc = _raw_tc_tb &0b0000_1111)]
     pub tb: u8,
     pub cs: u8,
 }
@@ -125,7 +125,7 @@ pub struct QuantizationTable {
     _raw_pq_tq: u8,
     #[br(calc = (_raw_pq_tq &0b1111_0000) >> 4)]
     pub pq: u8,
-    #[br(calc = (_raw_pq_tq &0b0000_1111) >> 0)]
+    #[br(calc = _raw_pq_tq &0b0000_1111)]
     pub tq: u8,
     #[br(args(pq == 1,))]
     pub qs: QuantizationEntries,
@@ -138,7 +138,7 @@ pub struct HuffmanTable {
     _raw_tc_th: u8,
     #[br(calc = (_raw_tc_th &0b1111_0000) >> 4)]
     pub tc: u8,
-    #[br(calc = (_raw_tc_th &0b0000_1111) >> 0)]
+    #[br(calc = _raw_tc_th &0b0000_1111)]
     pub th: u8,
     #[br(count = 16)]
     pub ls: Vec<u8>,
@@ -152,9 +152,9 @@ pub struct HuffmanTable {
 #[derive(Debug)]
 #[br(import(hi_precision: bool))]
 pub enum QuantizationEntries {
-    #[br(assert(hi_precision == false))]
+    #[br(assert(!hi_precision))]
     Low(#[br(count = 64)] Vec<u8>),
-    #[br(assert(hi_precision == true))]
+    #[br(assert(hi_precision))]
     Hi(#[br(count = 64)] Vec<u16>),
 }
 
@@ -168,7 +168,7 @@ pub struct DNL {
 
 #[binread]
 #[derive(Debug)]
-#[br(assert(n >= 0xC0 && n <= 0xCF && n != 0xC4 && n != 0xC8 && n!= 0xCC))]
+#[br(assert((0xC0..=0xCF).contains(&n) && n != 0xC4 && n != 0xC8 && n!= 0xCC))]
 #[br(assert(_marker == 0xFF))]
 pub struct SOFMarker {
     pub _marker: u8,
@@ -221,7 +221,7 @@ pub struct ECSSegment {
 
 #[binread]
 #[derive(Debug)]
-#[br(assert(_raw_n >= 0xD0 && _raw_n <= 0xD7))]
+#[br(assert((0xD0..=0xD7).contains(&_raw_n)))]
 #[br(assert(_marker == 0xFF))]
 pub struct RSTSegment {
     #[br(temp)]
@@ -245,7 +245,7 @@ pub struct ScanHeader {
     _raw_ah_al: u8,
     #[br(calc = (_raw_ah_al &0b1111_0000) >> 4)]
     pub ah: u8, //u4
-    #[br(calc = (_raw_ah_al &0b0000_1111) >> 0)]
+    #[br(calc = _raw_ah_al &0b0000_1111)]
     pub al: u8, //u4
 }
 
@@ -257,6 +257,6 @@ pub struct ScanComponentParameterSet {
     _raw_td_ta: u8,
     #[br(calc = (_raw_td_ta &0b1111_0000) >> 4)]
     pub td: u8, //u4
-    #[br(calc = (_raw_td_ta &0b0000_1111) >> 0)]
+    #[br(calc = _raw_td_ta &0b0000_1111)]
     pub ta: u8, //u4
 }

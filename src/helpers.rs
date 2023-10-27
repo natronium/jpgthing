@@ -74,5 +74,5 @@ pub(crate) fn parse_ecs() -> BinResult<Vec<u8>> {
         }
     }
 
-    return Ok(ret);
+    Ok(ret)
 }

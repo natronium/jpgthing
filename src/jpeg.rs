@@ -88,10 +88,7 @@ pub enum MiscSegment {
         tables: Vec<ArithmeticConditioningTable>,
     },
     #[br(magic = 0xFFDDu16)]
-    RestartIntervalDefinition {
-        _len: u16,
-        n: u16
-    },
+    RestartIntervalDefinition { len: u16, n: u16 },
     #[br(magic = 0xFFFEu16)]
     Comment {
         len: u16,

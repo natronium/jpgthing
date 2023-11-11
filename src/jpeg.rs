@@ -140,8 +140,7 @@ pub struct HuffmanTable {
     pub tc: u8,
     #[br(calc = _raw_tc_th &0b0000_1111)]
     pub th: u8,
-    #[br(count = 16)]
-    pub ls: Vec<u8>,
+    pub ls: [u8; 16],
     #[br(parse_with = args_iter(ls.iter().map(|&size| -> <Vec<u8> as BinRead>::Args<'_>  {
         args! {count: size.into()}
     })))]
@@ -153,9 +152,9 @@ pub struct HuffmanTable {
 #[br(import(hi_precision: bool))]
 pub enum QuantizationEntries {
     #[br(assert(!hi_precision))]
-    Low(#[br(count = 64)] Vec<u8>),
+    Low([u8; 64]),
     #[br(assert(hi_precision))]
-    Hi(#[br(count = 64)] Vec<u16>),
+    Hi([u16; 64]),
 }
 
 #[binread]

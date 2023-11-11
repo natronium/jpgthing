@@ -57,7 +57,7 @@ pub struct Frame {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MiscSegment {
     #[br(magic = 0xFFDBu16)]
     DefineQuantizationTable {
@@ -107,7 +107,7 @@ pub enum MiscSegment {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArithmeticConditioningTable {
     #[br(temp)]
     _raw_tc_tb: u8,
@@ -119,7 +119,7 @@ pub struct ArithmeticConditioningTable {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct QuantizationTable {
     #[br(temp)]
     _raw_pq_tq: u8,
@@ -132,7 +132,7 @@ pub struct QuantizationTable {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HuffmanTable {
     #[br(temp)]
     _raw_tc_th: u8,
@@ -148,7 +148,7 @@ pub struct HuffmanTable {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[br(import(hi_precision: bool))]
 pub enum QuantizationEntries {
     #[br(assert(!hi_precision))]
